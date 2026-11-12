@@ -41,16 +41,22 @@
                     <input type="date" id="entryDate" required class="w-full bg-red-50 border-2 border-red-200 rounded-2xl p-4 text-slate-900 text-base focus:outline-none focus:border-red-600 font-bold">
                 </div>
 
+                <!-- Vehicle Number -->
+                <div>
+                    <label class="block mb-1.5 text-slate-800 text-base">Vehicle Number</label>
+                    <input type="text" id="vehicleNo" placeholder="e.g. MH 12 AB 1234" class="w-full bg-red-50 border-2 border-red-200 rounded-2xl p-4 text-slate-900 text-base focus:outline-none focus:border-red-600 font-bold uppercase">
+                </div>
+
                 <!-- Name -->
                 <div>
                     <label class="block mb-1.5 text-slate-800 text-base">Visitor Name *</label>
                     <input type="text" id="visitorName" placeholder="Full Name" required class="w-full bg-red-50 border-2 border-red-200 rounded-2xl p-4 text-slate-900 text-base focus:outline-none focus:border-red-600 font-bold">
                 </div>
 
-                <!-- Vehicle Number -->
+                <!-- Mobile Number (Next to Name) -->
                 <div>
-                    <label class="block mb-1.5 text-slate-800 text-base">Vehicle Number</label>
-                    <input type="text" id="vehicleNo" placeholder="e.g. MH 12 AB 1234" class="w-full bg-red-50 border-2 border-red-200 rounded-2xl p-4 text-slate-900 text-base focus:outline-none focus:border-red-600 font-bold uppercase">
+                    <label class="block mb-1.5 text-slate-800 text-base">Mobile Number *</label>
+                    <input type="tel" id="visitorMobile" placeholder="e.g. 9876543210" maxlength="10" required class="w-full bg-red-50 border-2 border-red-200 rounded-2xl p-4 text-slate-900 text-base focus:outline-none focus:border-red-600 font-bold">
                 </div>
 
                 <!-- From (Origin/Company) -->
@@ -66,7 +72,7 @@
                 </div>
 
                 <!-- Purpose -->
-                <div>
+                <div class="sm:col-span-2">
                     <label class="block mb-1.5 text-slate-800 text-base">Purpose of Visit *</label>
                     <input type="text" id="visitPurpose" placeholder="Meeting, Delivery, Maintenance..." required class="w-full bg-red-50 border-2 border-red-200 rounded-2xl p-4 text-slate-900 text-base focus:outline-none focus:border-red-600 font-bold">
                 </div>
@@ -115,10 +121,10 @@
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
                         <tr class="bg-red-50 text-red-800 uppercase text-xs font-black border-b-2 border-red-200">
-                            <th class="p-3">Date / Time</th>
-                            <th class="p-3">Visitor Name</th>
+                            <th class="p-3">Date</th>
+                            <th class="p-3">Visitor & Mobile</th>
                             <th class="p-3">Vehicle</th>
-                            <th class="p-3">From / To</th>
+                            <th class="p-3">From / To See</th>
                             <th class="p-3">Purpose</th>
                             <th class="p-3">In / Out</th>
                             <th class="p-3">Sign</th>
@@ -163,6 +169,7 @@
                 id: Date.now(),
                 date: document.getElementById('entryDate').value,
                 name: document.getElementById('visitorName').value.trim(),
+                mobile: document.getElementById('visitorMobile').value.trim(),
                 vehicle: document.getElementById('vehicleNo').value.trim().toUpperCase() || 'N/A',
                 from: document.getElementById('originFrom').value.trim() || 'N/A',
                 toSee: document.getElementById('personToSee').value.trim(),
@@ -178,6 +185,7 @@
 
             // Reset form except date
             document.getElementById('visitorName').value = '';
+            document.getElementById('visitorMobile').value = '';
             document.getElementById('vehicleNo').value = '';
             document.getElementById('originFrom').value = '';
             document.getElementById('personToSee').value = '';
@@ -207,11 +215,12 @@
                     </td>
                     <td class="p-3">
                         <div class="font-black text-slate-900 text-base">${item.name}</div>
-                        <div class="text-xs text-slate-500 font-semibold">From: ${item.from}</div>
+                        <div class="text-xs text-red-600 font-black mt-0.5">📞 ${item.mobile}</div>
                     </td>
-                    <td class="p-3 text-xs font-mono font-black text-red-600">${item.vehicle}</td>
+                    <td class="p-3 text-xs font-mono font-black text-slate-800">${item.vehicle}</td>
                     <td class="p-3 text-xs">
-                        <div>To See: <b class="text-slate-900">${item.toSee}</b></div>
+                        <div class="text-slate-500">From: <b class="text-slate-800">${item.from}</b></div>
+                        <div class="text-slate-500 mt-0.5">To See: <b class="text-slate-900">${item.toSee}</b></div>
                     </td>
                     <td class="p-3 text-xs text-slate-600">${item.purpose}</td>
                     <td class="p-3 text-xs whitespace-nowrap">
