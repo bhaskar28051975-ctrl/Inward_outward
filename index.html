@@ -1,1 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BR Inward Entry System</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-red-950 text-slate-900 min-h-screen p-4 sm:p-6">
 
+    <div class="max-w-4xl mx-auto space-y-6">
+        
+        <!-- Header -->
+        <header class="bg-white rounded-3xl p-6 border-4 border-red-600 shadow-2xl flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-4">
+                <div class="w-14 h-14 rounded-2xl bg-red-600 flex items-center justify-center text-white text-3xl font-black shadow-lg">📋</div>
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-black text-red-600 uppercase">Inward Entry Portal</h1>
+                    <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mt-0.5">Visitor & Vehicle Security Log</p>
+                </div>
+            </div>
+            <div class="text-right hidden sm:block">
+                <span id="currentDateDisplay" class="text-sm font-black text-slate-700 bg-red-50 px-4 py-2 rounded-xl border border-red-200"></span>
+            </div>
+        </header>
+
+        <!-- Inward Entry Form Card -->
+        <div class="bg-white rounded-3xl p-6 sm:p-8 border-4 border-red-600 shadow-2xl space-y-6">
+            <h2 class="text-xl font-black text-red-600 uppercase border-b-2 border-red-100 pb-3">➕ New Inward Entry</h2>
+            
+            <form id="inwardForm" onsubmit="handleFormSubmit(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm font-bold">
+                
+                <!-- Date -->
+                <div>
+                    <label class="block mb-1.5 text-slate-800 text-base">Date *</label>
+                    <input type="date" id="entryDate" required class="w-full bg-red-50 border-2 border-red-200 rounded-2xl p-4 text-slate-900 text-base focus:outline-none focus:border-red-600 font-bold">
+                </div>
+
+                <!-- Name -->
+                <div>
+                    <label class="block mb-1.5 text-slate-800 text-base">Visitor Name *</label>
+                    <input type="text" id="visitorName" placeholder="Full Name" required class="w-full bg-red-50 border-2 border-red-200 rounded-2xl p-4 text-slate-900 text-base focus:outline-none focus:border-red-600 font-bold">
+                </div>
+
+                <!-- Vehicle Number -->
+                <div>
+                    <label class="block mb-1.5 text-slate-800 text-base">Vehicle Number</label>
+                    <input type="text" id="vehicleNo" placeholder="e.g. MH 12 AB 1234" class="w-full bg-red-50 border-2 border-red-200 rounded-2xl p-4 text-slate-900 text-base focus:outline-none focus:border-red-600 font-bold uppercase">
+                </div>
+
+                <!-- From (Origin/Company) -->
+                <div>
+                    <label class="block mb-1.5 text-slate-800 text-base">From (Company / Place)</label>
+                    <input type="text" id="originFrom" placeholder="Coming from..." class="w-full bg-red-50 border-2 border-red-200 rounded-2xl p-4 text-slate-900 text-base focus:outline-none focus:border-red-600 font-bold">
+                </div>
+
+                <!-- To See (Person / Department) -->
+                <div>
+                    <label class="block mb-1.5 text-slate-800 text-base">Whom to See *</label>
+                    <input type="text" id="personToSee" placeholder="Person or Department" required class="w-full bg-red-50 border-2 border-red-200 rounded-2xl p-4 text-slate-900 text-base focus:outline-none focus:border-red-600 font-bold">
+                </div>
+
+                <!-- Purpose -->
+                <div>
+                    <label class="block mb-1.5 text-slate-800 text-base">Purpose of Visit *</label>
+                    <input type="text" id="visitPurpose" placeholder="Meeting, Delivery, Maintenance..." required class="w-full bg-red-50 border-2 border-red-200 rounded-2xl p-4 text-slate-900 text-base focus:outline-none focus:border-red-600 font-bold">
+                </div>
+
+                <!-- In Time -->
+                <div>
+                    <label class="block mb-1.5 text-slate-800 text-base">In Time *</label>
+                    <div class="flex gap-2">
+                        <input type="time" id="inTime" required class="w-full bg-red-50 border-2 border-red-200 rounded-2xl p-4 text-slate-900 text-base focus:outline-none focus:border-red-600 font-bold">
+                        <button type="button" onclick="setCurrentTime('inTime')" class="bg-red-100 hover:bg-red-200 text-red-700 px-4 rounded-2xl text-xs font-black uppercase">Now</button>
+                    </div>
+                </div>
+
+                <!-- Out Time -->
+                <div>
+                    <label class="block mb-1.5 text-slate-800 text-base">Out Time</label>
+                    <div class="flex gap-2">
+                        <input type="time" id="outTime" class="w-full bg-red-50 border-2 border-red-200 rounded-2xl p-4 text-slate-900 text-base focus:outline-none focus:border-red-600 font-bold">
+                        <button type="button" onclick="setCurrentTime('outTime')" class="bg-red-100 hover:bg-red-200 text-red-700 px-4 rounded-2xl text-xs font-black uppercase">Now</button>
+                    </div>
+                </div>
+
+                <!-- Sign / Security Guard Check -->
+                <div class="sm:col-span-2">
+                    <label class="block mb-1.5 text-slate-800 text-base">Security Sign / Guard Initials *</label>
+                    <input type="text" id="guardSign" placeholder="Guard Name or Initials" required class="w-full bg-red-50 border-2 border-red-200 rounded-2xl p-4 text-slate-900 text-base focus:outline-none focus:border-red-600 font-bold">
+                </div>
+
+                <!-- Submit Button -->
+                <div class="sm:col-span-2 pt-2">
+                    <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-black py-4 rounded-2xl text-lg uppercase tracking-wider shadow-lg transition">
+                        💾 Save Inward Entry
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Logged Entries Table Section -->
+        <div class="bg-white rounded-3xl p-6 sm:p-8 border-4 border-red-600 shadow-2xl space-y-4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b-2 border-red-100 pb-3">
+                <h2 class="text-xl font-black text-red-600 uppercase">📊 Today's Inward Records</h2>
+                <button onclick="clearEntries()" class="text-xs bg-red-100 hover:bg-red-200 text-red-700 font-black px-4 py-2 rounded-xl border border-red-300 uppercase">Clear Records</button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-red-50 text-red-800 uppercase text-xs font-black border-b-2 border-red-200">
+                            <th class="p-3">Date / Time</th>
+                            <th class="p-3">Visitor Name</th>
+                            <th class="p-3">Vehicle</th>
+                            <th class="p-3">From / To</th>
+                            <th class="p-3">Purpose</th>
+                            <th class="p-3">In / Out</th>
+                            <th class="p-3">Sign</th>
+                        </tr>
+                    </thead>
+                    <tbody id="entriesTableBody" class="divide-y divide-slate-100 font-bold text-slate-700">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script Logic -->
+    <script>
+        // Set today's date automatically on load
+        window.onload = function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('entryDate').value = today;
+            
+            // Format header date display
+            const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
+            document.getElementById('currentDateDisplay').innerText = "📅 " + new Date().toLocaleDateString('en-US', options);
+
+            loadEntries();
+        };
+
+        // Quick helper to fill current time
+        function setCurrentTime(elementId) {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById(elementId).value = `${hours}:${minutes}`;
+        }
+
+        // Handle form submission
+        function handleFormSubmit(event) {
+            event.preventDefault();
+
+            const newEntry = {
+                id: Date.now(),
+                date: document.getElementById('entryDate').value,
+                name: document.getElementById('visitorName').value.trim(),
+                vehicle: document.getElementById('vehicleNo').value.trim().toUpperCase() || 'N/A',
+                from: document.getElementById('originFrom').value.trim() || 'N/A',
+                toSee: document.getElementById('personToSee').value.trim(),
+                purpose: document.getElementById('visitPurpose').value.trim(),
+                inTime: document.getElementById('inTime').value,
+                outTime: document.getElementById('outTime').value || 'Pending',
+                sign: document.getElementById('guardSign').value.trim()
+            };
+
+            let entries = JSON.parse(localStorage.getItem('br_inward_entries')) || [];
+            entries.unshift(newEntry); // Add new entry to top
+            localStorage.setItem('br_inward_entries', JSON.stringify(entries));
+
+            // Reset form except date
+            document.getElementById('visitorName').value = '';
+            document.getElementById('vehicleNo').value = '';
+            document.getElementById('originFrom').value = '';
+            document.getElementById('personToSee').value = '';
+            document.getElementById('visitPurpose').value = '';
+            document.getElementById('inTime').value = '';
+            document.getElementById('outTime').value = '';
+            document.getElementById('guardSign').value = '';
+
+            loadEntries();
+            alert('Inward entry saved successfully!');
+        }
+
+        // Load saved entries from localStorage into table
+        function loadEntries() {
+            const tbody = document.getElementById('entriesTableBody');
+            const entries = JSON.parse(localStorage.getItem('br_inward_entries')) || [];
+
+            if (entries.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400 font-semibold">No inward entries recorded yet.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = entries.map(item => `
+                <tr class="hover:bg-red-50/50">
+                    <td class="p-3 whitespace-nowrap text-xs">
+                        <div class="font-black text-slate-900">${item.date}</div>
+                    </td>
+                    <td class="p-3">
+                        <div class="font-black text-slate-900 text-base">${item.name}</div>
+                        <div class="text-xs text-slate-500 font-semibold">From: ${item.from}</div>
+                    </td>
+                    <td class="p-3 text-xs font-mono font-black text-red-600">${item.vehicle}</td>
+                    <td class="p-3 text-xs">
+                        <div>To See: <b class="text-slate-900">${item.toSee}</b></div>
+                    </td>
+                    <td class="p-3 text-xs text-slate-600">${item.purpose}</td>
+                    <td class="p-3 text-xs whitespace-nowrap">
+                        <span class="bg-green-100 text-green-800 px-2 py-0.5 rounded font-black">In: ${item.inTime}</span>
+                        <div class="mt-1 text-slate-500">Out: ${item.outTime}</div>
+                    </td>
+                    <td class="p-3 text-xs font-black text-slate-800">${item.sign}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Clear all entries
+        function clearEntries() {
+            if (confirm('Are you sure you want to clear all inward records?')) {
+                localStorage.removeItem('br_inward_entries');
+                loadEntries();
+            }
+        }
+    </script>
+</body>
+</html>
