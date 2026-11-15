@@ -3,10 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BR Inward Entry System</title>
+    <title>BR Inward Entry System - Cloud Connected</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Firebase Compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
@@ -21,7 +26,7 @@
                 <div class="w-14 h-14 rounded-2xl bg-red-600 flex items-center justify-center text-white text-3xl font-black shadow-lg">📋</div>
                 <div>
                     <h1 class="text-2xl sm:text-3xl font-black text-red-600 uppercase">Inward Entry Portal</h1>
-                    <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mt-0.5">Visitor & Vehicle Security Log</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mt-0.5">Visitor & Vehicle Security Log (Cloud Sync)</p>
                 </div>
             </div>
             <div class="text-right hidden sm:block">
@@ -104,7 +109,7 @@
                 <!-- Submit Button -->
                 <div class="sm:col-span-2 pt-2">
                     <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-black py-4 rounded-2xl text-lg uppercase tracking-wider shadow-lg transition">
-                        💾 Save Inward Entry
+                        💾 Save Inward Entry to Cloud
                     </button>
                 </div>
             </form>
@@ -113,8 +118,8 @@
         <!-- Logged Entries Table Section -->
         <div class="bg-white rounded-3xl p-6 sm:p-8 border-4 border-red-600 shadow-2xl space-y-4">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b-2 border-red-100 pb-3">
-                <h2 class="text-xl font-black text-red-600 uppercase">📊 Today's Inward Records</h2>
-                <button onclick="clearEntries()" class="text-xs bg-red-100 hover:bg-red-200 text-red-700 font-black px-4 py-2 rounded-xl border border-red-300 uppercase">Clear Records</button>
+                <h2 class="text-xl font-black text-red-600 uppercase">📊 Live Cloud Inward Records</h2>
+                <button onclick="clearCloudEntries()" class="text-xs bg-red-100 hover:bg-red-200 text-red-700 font-black px-4 py-2 rounded-xl border border-red-300 uppercase">Clear All Records</button>
             </div>
 
             <div class="overflow-x-auto">
@@ -131,7 +136,7 @@
                         </tr>
                     </thead>
                     <tbody id="entriesTableBody" class="divide-y divide-slate-100 font-bold text-slate-700">
-                        <!-- Populated by JavaScript -->
+                        <tr><td colspan="7" class="p-6 text-center text-slate-400 font-semibold">Connecting to Firebase...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -141,6 +146,22 @@
 
     <!-- Script Logic -->
     <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBgYOdn0UrDllR4drlR8HvlptbtJ3HIxe0",
+            authDomain: "gate-entry-29dcd.firebaseapp.com",
+            databaseURL: "https://gate-entry-29dcd-default-rtdb.firebaseio.com",
+            projectId: "gate-entry-29dcd",
+            storageBucket: "gate-entry-29dcd.firebasestorage.app",
+            messagingSenderId: "23628274106",
+            appId: "1:23628274106:web:2a19c9202938ced118a583",
+            measurementId: "G-PHTNQN25MQ"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
         // Set today's date automatically on load
         window.onload = function() {
             const today = new Date().toISOString().split('T')[0];
@@ -150,7 +171,7 @@
             const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
             document.getElementById('currentDateDisplay').innerText = "📅 " + new Date().toLocaleDateString('en-US', options);
 
-            loadEntries();
+            fetchCloudEntries();
         };
 
         // Quick helper to fill current time
@@ -161,12 +182,11 @@
             document.getElementById(elementId).value = `${hours}:${minutes}`;
         }
 
-        // Handle form submission
+        // Handle form submission and push to Firebase Realtime Database
         function handleFormSubmit(event) {
             event.preventDefault();
 
             const newEntry = {
-                id: Date.now(),
                 date: document.getElementById('entryDate').value,
                 name: document.getElementById('visitorName').value.trim(),
                 mobile: document.getElementById('visitorMobile').value.trim(),
@@ -176,67 +196,81 @@
                 purpose: document.getElementById('visitPurpose').value.trim(),
                 inTime: document.getElementById('inTime').value,
                 outTime: document.getElementById('outTime').value || 'Pending',
-                sign: document.getElementById('guardSign').value.trim()
+                sign: document.getElementById('guardSign').value.trim(),
+                timestamp: Date.now()
             };
 
-            let entries = JSON.parse(localStorage.getItem('br_inward_entries')) || [];
-            entries.unshift(newEntry); // Add new entry to top
-            localStorage.setItem('br_inward_entries', JSON.stringify(entries));
+            // Push to Firebase database under 'inward_entries' node
+            db.ref('inward_entries').push(newEntry)
+                .then(() => {
+                    // Reset form except date
+                    document.getElementById('visitorName').value = '';
+                    document.getElementById('visitorMobile').value = '';
+                    document.getElementById('vehicleNo').value = '';
+                    document.getElementById('originFrom').value = '';
+                    document.getElementById('personToSee').value = '';
+                    document.getElementById('visitPurpose').value = '';
+                    document.getElementById('inTime').value = '';
+                    document.getElementById('outTime').value = '';
+                    document.getElementById('guardSign').value = '';
 
-            // Reset form except date
-            document.getElementById('visitorName').value = '';
-            document.getElementById('visitorMobile').value = '';
-            document.getElementById('vehicleNo').value = '';
-            document.getElementById('originFrom').value = '';
-            document.getElementById('personToSee').value = '';
-            document.getElementById('visitPurpose').value = '';
-            document.getElementById('inTime').value = '';
-            document.getElementById('outTime').value = '';
-            document.getElementById('guardSign').value = '';
-
-            loadEntries();
-            alert('Inward entry saved successfully!');
+                    alert('Inward entry successfully saved to Firebase Cloud!');
+                })
+                .catch(error => {
+                    alert('Error saving to Firebase: ' + error.message);
+                });
         }
 
-        // Load saved entries from localStorage into table
-        function loadEntries() {
+        // Real-time listener to fetch and display entries from Firebase Database
+        function fetchCloudEntries() {
             const tbody = document.getElementById('entriesTableBody');
-            const entries = JSON.parse(localStorage.getItem('br_inward_entries')) || [];
+            
+            db.ref('inward_entries').orderByChild('timestamp').on('value', snapshot => {
+                const data = snapshot.val();
+                if (!data) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400 font-semibold">No inward entries found in cloud database.</td></tr>`;
+                    return;
+                }
 
-            if (entries.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400 font-semibold">No inward entries recorded yet.</td></tr>`;
-                return;
-            }
+                let entries = [];
+                Object.keys(data).forEach(key => {
+                    entries.push({ id: key, ...data[key] });
+                });
 
-            tbody.innerHTML = entries.map(item => `
-                <tr class="hover:bg-red-50/50">
-                    <td class="p-3 whitespace-nowrap text-xs">
-                        <div class="font-black text-slate-900">${item.date}</div>
-                    </td>
-                    <td class="p-3">
-                        <div class="font-black text-slate-900 text-base">${item.name}</div>
-                        <div class="text-xs text-red-600 font-black mt-0.5">📞 ${item.mobile}</div>
-                    </td>
-                    <td class="p-3 text-xs font-mono font-black text-slate-800">${item.vehicle}</td>
-                    <td class="p-3 text-xs">
-                        <div class="text-slate-500">From: <b class="text-slate-800">${item.from}</b></div>
-                        <div class="text-slate-500 mt-0.5">To See: <b class="text-slate-900">${item.toSee}</b></div>
-                    </td>
-                    <td class="p-3 text-xs text-slate-600">${item.purpose}</td>
-                    <td class="p-3 text-xs whitespace-nowrap">
-                        <span class="bg-green-100 text-green-800 px-2 py-0.5 rounded font-black">In: ${item.inTime}</span>
-                        <div class="mt-1 text-slate-500">Out: ${item.outTime}</div>
-                    </td>
-                    <td class="p-3 text-xs font-black text-slate-800">${item.sign}</td>
-                </tr>
-            `).join('');
+                // Sort newest first
+                entries.reverse();
+
+                tbody.innerHTML = entries.map(item => `
+                    <tr class="hover:bg-red-50/50">
+                        <td class="p-3 whitespace-nowrap text-xs">
+                            <div class="font-black text-slate-900">${item.date}</div>
+                        </td>
+                        <td class="p-3">
+                            <div class="font-black text-slate-900 text-base">${item.name}</div>
+                            <div class="text-xs text-red-600 font-black mt-0.5">📞 ${item.mobile}</div>
+                        </td>
+                        <td class="p-3 text-xs font-mono font-black text-slate-800">${item.vehicle}</td>
+                        <td class="p-3 text-xs">
+                            <div class="text-slate-500">From: <b class="text-slate-800">${item.from}</b></div>
+                            <div class="text-slate-500 mt-0.5">To See: <b class="text-slate-900">${item.toSee}</b></div>
+                        </td>
+                        <td class="p-3 text-xs text-slate-600">${item.purpose}</td>
+                        <td class="p-3 text-xs whitespace-nowrap">
+                            <span class="bg-green-100 text-green-800 px-2 py-0.5 rounded font-black">In: ${item.inTime}</span>
+                            <div class="mt-1 text-slate-500">Out: ${item.outTime}</div>
+                        </td>
+                        <td class="p-3 text-xs font-black text-slate-800">${item.sign}</td>
+                    </tr>
+                `).join('');
+            });
         }
 
-        // Clear all entries
-        function clearEntries() {
-            if (confirm('Are you sure you want to clear all inward records?')) {
-                localStorage.removeItem('br_inward_entries');
-                loadEntries();
+        // Clear all entries from Firebase Database
+        function clearCloudEntries() {
+            if (confirm('Are you sure you want to delete ALL cloud records? This cannot be undone.')) {
+                db.ref('inward_entries').remove()
+                    .then(() => alert('All records cleared successfully.'))
+                    .catch(err => alert('Error clearing records: ' + err.message));
             }
         }
     </script>
